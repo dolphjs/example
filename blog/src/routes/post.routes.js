@@ -1,7 +1,7 @@
 /**
  * @author Utibeabasi Ekong <https://github.com/Xlaez>
  */
-const { Router } = require('@dolphjs/core');
+const { Router, mediaParser } = require('@dolphjs/core');
 
 const {
   uploadNewPost,
@@ -27,8 +27,9 @@ const {
 const validate = require('../validations/validate.validator');
 const postValidation = require('../validations/post.validator');
 const uservalidation = require('../validations/user.validator');
-const { multipleUpload } = require('../libs/multer.libs');
+// const { multipleUpload } = require('../libs/multer.libs');
 const verifyAcc = require('../middlewares/verifyUser.middleware');
+const allowedFileExtensions = require('../utils/allowedFileTypes.utils');
 
 class PostRouter {
   constructor() {
@@ -38,25 +39,30 @@ class PostRouter {
   }
 
   Routes() {
-    this.router.post(`${this.path}`, multipleUpload, validate(postValidation.uploadPost), verifyAcc, uploadNewPost);
+    this.router.post(
+      `${this.path}`,
+      mediaParser({ allowedExtensions: allowedFileExtensions, fieldname: 'uploads', type: 'array', limit: 10 }),
+      validate(postValidation.uploadPost),
+      verifyAcc,
+      uploadNewPost
+    );
     this.router.get(`${this.path}/query`, validate(uservalidation.queryUsers), verifyAcc, getPosts);
     this.router.patch(`${this.path}/:id`, validate(postValidation.updatePost), verifyAcc, updatePost);
     this.router.delete(`${this.path}/:id`, validate(postValidation.deletePost), verifyAcc, deletePost);
     this.router.get(`${this.path}/:id`, validate(postValidation.deletePost), verifyAcc, getPost);
-    this.router.get(`${this.path}/:id`, validate(postValidation.deletePost), verifyAcc, getPost);
-    this.router.put(`${this.path}/like/:id`, validate(postValidation.deletePost), verifyAcc, likePost);
-    this.router.get(`${this.path}/likedBy/users`, verifyAcc, queryUsersWhoLikedPost);
+    this.router.put(`${this.path}/:id/like`, validate(postValidation.deletePost), verifyAcc, likePost);
+    this.router.get(`${this.path}/likedBy`, verifyAcc, queryUsersWhoLikedPost);
 
-    this.router.purge(`${this.path}/unlike/:id`, validate(postValidation.deletePost), verifyAcc, unlikePost);
-    this.router.put(`${this.path}/views/:id`, validate(postValidation.deletePost), verifyAcc, addViewsCount);
+    this.router.purge(`${this.path}/:id/unlike`, validate(postValidation.deletePost), verifyAcc, unlikePost);
+    this.router.put(`${this.path}/:id/views`, validate(postValidation.deletePost), verifyAcc, addViewsCount);
 
     this.router.post(`${this.path}/comment`, validate(postValidation.createComment), verifyAcc, createComment);
     this.router.delete(`${this.path}/comment/:commentId`, validate(postValidation.deleteComment), verifyAcc, deleteComment);
     this.router.get(`${this.path}/comment/replies`, validate(postValidation.getReplies), verifyAcc, getReplies);
     this.router.get(`${this.path}/comment/query`, validate(postValidation.getComments), verifyAcc, getComments);
     this.router.patch(`${this.path}/comment/update`, validate(postValidation.updateComment), verifyAcc, updateComment);
-    this.router.put(`${this.path}/comment/like/:id`, validate(postValidation.likeComment), verifyAcc, addLikes);
-    this.router.purge(`${this.path}/comment/unlike/:id`, validate(postValidation.likeComment), verifyAcc, removeLike);
+    this.router.put(`${this.path}/comment/:id/like`, validate(postValidation.likeComment), verifyAcc, addLikes);
+    this.router.purge(`${this.path}/comment/:id/unlike`, validate(postValidation.likeComment), verifyAcc, removeLike);
   }
 }
 

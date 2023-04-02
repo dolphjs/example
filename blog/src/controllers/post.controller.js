@@ -38,7 +38,7 @@ const updatePost = catchAsync(async (req, res) => {
 const deletePost = catchAsync(async (req, res) => {
   const result = await deletPost(req.params.id);
   if (result.deletedCount === 0) throw new AppRes(httpStatus.INTERNAL_SERVER_ERROR, 'cannot delete resource');
-  res.status(httpStatus.OK).send('updated successfully');
+  res.status(httpStatus.OK).send('deleted successfully');
 });
 
 const getPost = catchAsync(async (req, res) => {
